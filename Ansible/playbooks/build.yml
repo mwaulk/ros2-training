@@ -1,0 +1,90 @@
+---
+- hosts: all
+  # remote_user: root
+  become: true
+  tasks:
+  - debug: 
+      msg: "{{ ansible_facts.distribution_release}}"
+  - name: collent dpkg architecture
+    shell: dpkg --print-architecture
+    register: arch
+  - name: add ros2 apt repo
+    uri:
+      url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.key
+      dest: /usr/share/keyrings/ros-archive-keyring.gpg
+  - name: add repo to source list
+    lineinfile:
+      path: /etc/apt/sources.list.d/ros2.list
+      line: deb [arch={{ arch.stdout }} signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu {{ ansible_facts.distribution_release }} main
+  - name: install all required packages
+    apt:
+      update_cache: yes
+      pkg:
+      - build-essential
+      - gcc
+      - make
+      - dkms
+      - python3
+      - python3-pip
+      - python-is-python3
+      - build-essential
+      - gcc
+      - make
+      - perl
+      - dkms
+      - python3
+      - python3-pip
+      - python-is-python3
+      - terminator
+      - python3-colcon-common-extensions
+      - python3-colcon-ros
+      - curl
+      - gnupg2
+      - lsb-release
+      - locales
+      - ros-foxy-desktop
+      - libusb-1.0-0
+      - libudev-dev
+      - libi2c-dev
+  - name: upgrade all
+    apt:
+      upgrade: yes
+  - name: Update .bashrc
+    blockinfile:
+      path: "/home/{{ ansible_env.SUDO_USER }}/.bashrc"
+      block: |
+        source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash
+        source /opt/ros/foxy/setup.bash
+        export BLINKA_MCP2221=1
+      marker: '# {mark} ANSIBLE MANAGED BLOCK'
+      insertbefore: BOF
+      create: yes
+  - name: remove native mcp2221 kernal module
+    modprobe:
+      name: hid_mcp2221
+      state: absent
+  - name: Add MCP2221 udev rules
+    lineinfile:
+      create: yes
+      path: /etc/udev/rules.d/99-mcp2221.rules
+      line: SUBSYSTEM=="usb", ATTRS{idVendor}=="04d8", ATTR{idProduct}=="00dd", MODE="0666"
+  - name: reset udev rules
+    shell: udevadm control --reload-rules && udevadm trigger  
+  - name: block native kernal module for hid_mcp2221
+    lineinfile:
+      create: yes
+      path: /etc/modprobe.d/blacklist.conf
+      line: blacklist hid_mcp2221
+  - name: update conifguration in initramfs
+    shell: update-initramfs -u
+  - name: install pip packages
+    pip:
+      name:
+      - argcomplete
+      - adafruit-blinka
+      - hidapi
+      - adafruit-circuitpython-bno055
+  
+
+
+

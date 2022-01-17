@@ -46,6 +46,7 @@
       - libusb-1.0-0
       - libudev-dev
       - libi2c-dev
+      - git
   - name: upgrade all
     apt:
       upgrade: yes
@@ -75,7 +76,7 @@
       create: yes
       path: /etc/modprobe.d/blacklist.conf
       line: blacklist hid_mcp2221
-  - name: update conifguration in initramfs
+  - name: update configuration in initramfs
     shell: update-initramfs -u
   - name: install pip packages
     pip:

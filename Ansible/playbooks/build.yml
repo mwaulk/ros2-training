@@ -88,7 +88,7 @@
   - name: Git checkout project
     git:
       repo: 'https://github.com/mwaulk/ros2-training.git'
-      dest: /home/{{ ansible_env.SUDO_USER }}/
+      dest: /home/{{ ansible_env.SUDO_USER }}/ros2-training
 
 
 

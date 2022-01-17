@@ -63,7 +63,6 @@
       marker: '# {mark} ANSIBLE MANAGED BLOCK'
       insertbefore: BOF
       create: yes
-    become: true
   - name: remove native mcp2221 kernal module
     modprobe:
       name: hid_mcp2221
